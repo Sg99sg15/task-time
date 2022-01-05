@@ -1,47 +1,15 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "./Theme";
-import {
-  Avatar,
-  AppBar,
-  Box,
-  Toolbar,
-  Typography,
-  IconButton,
-  Container,
-  Paper,
-  TableCell,
-  TableRow,
-  TableHead,
-  Table,
-  TableContainer,
-  TableBody,
-} from "@mui/material";
-import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  FormControlLabel,
-  Radio,
-  RadioGroup,
-  Button,
-} from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import arrayOfObjects from "./Array";
-import { makeStyles } from "@mui/styles";
-
-const useStyle = makeStyles({
-  container: {
-    padding: "5px",
-    margin: "10px",
-  },
-  box: {
-    padding: "5px",
-  },
-});
+import { Box, Typography, Container, Paper, Button } from "@mui/material";
+import arrayOfObjects from "./Component/Array";
+import Start from "./Component/Start";
+import Questions from "./Component/Questions";
+import FullResult from "./Component/FullResult";
+import AppBarr from "./Component/AppBarr";
+import AttQue from "./Component/AttQue";
 
 export default function App() {
-  const classes = useStyle();
   const [expanded, setExpanded] = useState(false);
   const [showResult, setshowResult] = useState(false);
   const [choose, setChoose] = useState([]);
@@ -90,72 +58,12 @@ export default function App() {
     setSelectedAnswer([...selectedAnswer, id]);
   };
   const ans = choose.map((user, index) => (
-    <>
-      <Accordion
-        expanded={expanded === index}
-        onChange={handleChange(index)}
-        key={index}
-      >
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="pan1a-content"
-          id="pan1a-header"
-        >
-          <Button
-            variant="outlined"
-            sx={{ textTransform: "none", marginRight: '10px' }}
-            color="secondary"
-            size="small"
-          >
-            Time taken: {user.qtime} sec
-          </Button>
-          <Typography>Question {user.qn}:</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Typography>{user.question}</Typography>
-          <Box
-            maxWidth="lg"
-            mt={5}
-            display="flex"
-            justifyContent="space-evenly"
-            alignItems="center"
-          >
-            <Typography>Your selected answer :</Typography>
-            <RadioGroup name="same">
-              <Button
-                style={{ border: "3px solid", margin: "5px" }}
-                size="small"
-                variant="outlined"
-                color="secondary"
-                key={index}
-              >
-                <FormControlLabel
-                  value={user.ans}
-                  control={<Radio disabled color="secondary" />}
-                  label={user.ans}
-                />
-              </Button>
-            </RadioGroup>
-            <Typography>Right answer is:</Typography>
-            <RadioGroup name="same">
-              <Button
-                style={{ border: "3px solid", margin: "5px" }}
-                size="small"
-                variant="outlined"
-                color="secondary"
-                key={index}
-              >
-                <FormControlLabel
-                  value={user.right}
-                  control={<Radio disabled color="secondary" />}
-                  label={user.right}
-                />
-              </Button>
-            </RadioGroup>
-          </Box>
-        </AccordionDetails>
-      </Accordion>
-    </>
+    <AttQue
+      expanded={expanded}
+      index={index}
+      user={user}
+      handleChange={handleChange}
+    />
   ));
 
   // start Quiz
@@ -229,169 +137,28 @@ export default function App() {
     .slice(pageVisited, pageVisited + userPerPage)
     .map((user) => {
       return (
-        <>
-          <Container component={Paper} className={classes.container}>
-            <Box className={classes.box}>
-              <Typography>
-                Question {user.qNo}: {user.ques}
-              </Typography>
-            </Box>
-            <Box maxWidth="lg" mt={5} display="flex" justifyContent="center">
-              <RadioGroup name="same">
-                {user.options.map((item, index) => {
-                  return (
-                    <Button
-                      style={{ border: "3px solid", margin: "5px" }}
-                      size="small"
-                      variant="outlined"
-                      color={
-                        selectedAnswer.includes(user.qNo) && item.isCorrect
-                          ? "success"
-                          : selectedAnswer.includes(user.qNo) &&
-                            item.isCorrect === false
-                          ? "error"
-                          : "secondary"
-                      }
-                      key={index}
-                    >
-                      <FormControlLabel
-                        value={item.answer}
-                        control={
-                          <Radio
-                            disabled={selectedAnswer.includes(user.qNo)}
-                            onClick={() =>
-                              handleAnswerOptionClick(
-                                item.isCorrect,
-                                user.qNo,
-                                item.answer,
-                                user
-                              )
-                            }
-                            color="secondary"
-                          />
-                        }
-                        label={item.answer}
-                      />
-                    </Button>
-                  );
-                })}
-              </RadioGroup>
-            </Box>
-          </Container>
-        </>
+        <Questions
+          user={user}
+          selectedAnswer={selectedAnswer}
+          handleAnswerOptionClick={handleAnswerOptionClick}
+        />
       );
     });
 
   return (
     <ThemeProvider theme={theme}>
       <Box mb={5}>
-        <AppBar position="static" color="secondary">
-          <Toolbar>
-            <Typography
-              variant="h6"
-              onClick={() => window.location.reload()}
-              component="div"
-              style={{ flexGrow: 1 }}
-            >
-              Home
-            </Typography>
-            <Typography variant="h6" mr={5}>
-              Score: {score}
-            </Typography>
-            <IconButton>
-              <Avatar>S</Avatar>
-            </IconButton>
-          </Toolbar>
-        </AppBar>
+        <AppBarr score={score} />
         {showResult ? (
-          <>
-            <Container
-              sx={{ marginTop: "5%", padding: "2%" }}
-              variant="outlined"
-              component={Paper}
-            >
-              <Box
-                sx={{
-                  width: "100%",
-                  display: "flex",
-                  justifyContent: "center",
-                  margin: "5px",
-                }}
-              >
-                <Typography
-                  variant="button"
-                  sx={{
-                    fontSize: "28px",
-                  }}
-                >
-                  Your Result
-                </Typography>
-              </Box>
-              <TableContainer component={Paper}>
-                <Table
-                  sx={{ minWidth: 650 }}
-                  size="small"
-                  aria-label="a dense table"
-                >
-                  <TableHead>
-                    <TableRow>
-                      <TableCell align="center">
-                        Total Number of Questions
-                      </TableCell>
-                      <TableCell align="center">Missed Question</TableCell>
-                      <TableCell align="center">Right Answer</TableCell>
-                      <TableCell align="center">Wrong Answer</TableCell>
-                      <TableCell align="center">Postive Marks</TableCell>
-                      <TableCell align="center">Negative Marks</TableCell>
-                      <TableCell align="center">Marks Obtained</TableCell>
-                      <TableCell align="center">Total Marks</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell align="center">
-                        {arrayOfObjects.length}
-                      </TableCell>
-                      <TableCell align="center">
-                        {arrayOfObjects.length - (right + wrong)}
-                      </TableCell>
-                      <TableCell align="center">{right}</TableCell>
-                      <TableCell align="center">{wrong}</TableCell>
-                      <TableCell align="center">{posi}</TableCell>
-                      <TableCell align="center">{nega}</TableCell>
-                      <TableCell align="center">{score}</TableCell>
-                      <TableCell align="center">{totalMarks}</TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Container>
-            <Container
-              sx={{ marginTop: "2%", padding: "2%" }}
-              variant="outlined"
-              component={Paper}
-            >
-              <Box
-                sx={{
-                  width: "100%",
-                  display: "flex",
-                  justifyContent: "center",
-                  margin: "5px",
-                }}
-              >
-                <Typography
-                  variant="button"
-                  sx={{
-                    fontSize: "28px",
-                  }}
-                >
-                  Attempted Questions
-                </Typography>
-              </Box>
-
-              {ans}
-            </Container>
-          </>
+          <FullResult
+            ans={ans}
+            totalMarks={totalMarks}
+            right={right}
+            wrong={wrong}
+            posi={posi}
+            nega={nega}
+            score={score}
+          />
         ) : (
           <Container maxWidth="md">
             <Box
@@ -407,50 +174,7 @@ export default function App() {
             </Box>
             <Paper elevation={5} component={Box} p={2}>
               {start ? (
-                <>
-                  <Box
-                    sx={{
-                      width: "100%",
-                      display: "flex",
-                      justifyContent: "center",
-                      borderBottom: "2px solid black",
-                    }}
-                  >
-                    <Typography sx={{ fontSize: "20px" }} variant="overline">
-                      Instruction
-                    </Typography>
-                  </Box>
-                  <Box sx={{ width: "100%", margin: "5px" }}>
-                    <Typography variant="overline">
-                      Welcome to Quiz app. In this quiz have{" "}
-                      {arrayOfObjects.length} Questions. Each question in the
-                      quiz is of multiple-choice format. Each Question have fix time to choose answer. Each
-                      correct or incorrect response will result in appropriate
-                      feedback immediately at the end of all Questions. There
-                      will be negative marking on the basis of questions marks.
-                      The total score for the quiz is based on your responses to
-                      all questions.
-                    </Typography>
-                  </Box>
-                  <Box
-                    pt={2}
-                    sx={{
-                      width: "100%",
-                      display: "flex",
-                      justifyContent: "center",
-                      borderTop: "2px solid black",
-                    }}
-                  >
-                    <Button
-                      variant="contained"
-                      size="medium"
-                      onClick={qstart}
-                      color="secondary"
-                    >
-                      START Quiz
-                    </Button>
-                  </Box>
-                </>
+                <Start qstart={qstart} />
               ) : (
                 <>
                   <Box maxWidth="lg" textAlign="right">
