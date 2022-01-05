@@ -54,7 +54,8 @@ export default function App() {
   const [users] = useState(arrayOfObjects.slice(0, arrayOfObjects.length));
   const [pageNumber, setPageNumber] = useState(0);
   const [start, setStart] = useState(true);
-
+  const [timer, setTimer] = useState();
+  const num = 15;
   // Accordian expand
   const handleChange = (open) => (event, isExpanded) => {
     setExpanded(isExpanded ? open : false);
@@ -70,22 +71,22 @@ export default function App() {
       setScore(score - all.negative);
       setWrong(wrong + 1);
       setNega(nega + all.negative);
-
-      let rAns = all.options
-        .filter(function (element) {
-          return element.isCorrect === true;
-        })
-        .map(function (el) {
-          return el.answer;
-        });
-      setChoose([
-        ...choose,
-        { qn: id, question: all.ques, ans: answer, right: rAns },
-      ]);
     }
-    // if (Ref.current) {
-    //   clearInterval(Ref.current);
-    // }
+    const time = num - timer;
+    let rAns = all.options
+      .filter(function (element) {
+        return element.isCorrect === true;
+      })
+      .map(function (el) {
+        return el.answer;
+      });
+    setChoose([
+      ...choose,
+      { qn: id, question: all.ques, ans: answer, right: rAns, qtime: time },
+    ]);
+    if (Ref.current) {
+      clearInterval(Ref.current);
+    }
     setSelectedAnswer([...selectedAnswer, id]);
   };
   const ans = choose.map((user, index) => (
@@ -100,6 +101,14 @@ export default function App() {
           aria-controls="pan1a-content"
           id="pan1a-header"
         >
+          <Button
+            variant="outlined"
+            sx={{ textTransform: "none", marginRight: '10px' }}
+            color="secondary"
+            size="small"
+          >
+            Time taken: {user.qtime} sec
+          </Button>
           <Typography>Question {user.qn}:</Typography>
         </AccordionSummary>
         <AccordionDetails>
@@ -117,7 +126,7 @@ export default function App() {
                 style={{ border: "3px solid", margin: "5px" }}
                 size="small"
                 variant="outlined"
-                color="error"
+                color="secondary"
                 key={index}
               >
                 <FormControlLabel
@@ -133,7 +142,7 @@ export default function App() {
                 style={{ border: "3px solid", margin: "5px" }}
                 size="small"
                 variant="outlined"
-                color="success"
+                color="secondary"
                 key={index}
               >
                 <FormControlLabel
@@ -152,14 +161,13 @@ export default function App() {
   // start Quiz
   const qstart = () => {
     setStart(false);
-    clearTimer(getDeadTime())
-  }
+    clearTimer(getDeadTime());
+  };
   // Next Page
   const next = () => {
     setPageNumber((pre) => pre + 1);
     clearTimer(getDeadTime());
   };
-
 
   // Result page
   const result = () => {
@@ -175,14 +183,12 @@ export default function App() {
   // FOr timer
 
   const Ref = useRef(null);
-  const [timer, setTimer] = useState();
   const getTimeRemaining = (e) => {
     const total = Date.parse(e) - Date.parse(new Date());
     const seconds = Math.floor((total / 1000) % 60);
     if (seconds === 0) {
       next();
     }
-
     return {
       total,
       seconds,
@@ -195,7 +201,7 @@ export default function App() {
     }
   };
   const clearTimer = (e) => {
-    setTimer("10");
+    setTimer("15");
     if (Ref.current) {
       clearInterval(Ref.current);
     }
@@ -206,16 +212,15 @@ export default function App() {
   };
   const getDeadTime = () => {
     let deadline = new Date();
-    deadline.setSeconds(deadline.getSeconds() + 10);
+    deadline.setSeconds(deadline.getSeconds() + 15);
     return deadline;
   };
   useEffect(() => {
-    // clearTimer(getDeadTime());
-    console.log(pageNumber);
     if (pageNumber === arrayOfObjects.length) {
       result();
     }
   }, [pageNumber]);
+
   // Render all questions [slice and map]
 
   const userPerPage = 1;
@@ -239,7 +244,6 @@ export default function App() {
                       style={{ border: "3px solid", margin: "5px" }}
                       size="small"
                       variant="outlined"
-                      // disabled={sec === 0 ? true : false}
                       color={
                         selectedAnswer.includes(user.qNo) && item.isCorrect
                           ? "success"
@@ -306,6 +310,23 @@ export default function App() {
               variant="outlined"
               component={Paper}
             >
+              <Box
+                sx={{
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "center",
+                  margin: "5px",
+                }}
+              >
+                <Typography
+                  variant="button"
+                  sx={{
+                    fontSize: "28px",
+                  }}
+                >
+                  Your Result
+                </Typography>
+              </Box>
               <TableContainer component={Paper}>
                 <Table
                   sx={{ minWidth: 650 }}
@@ -317,6 +338,7 @@ export default function App() {
                       <TableCell align="center">
                         Total Number of Questions
                       </TableCell>
+                      <TableCell align="center">Missed Question</TableCell>
                       <TableCell align="center">Right Answer</TableCell>
                       <TableCell align="center">Wrong Answer</TableCell>
                       <TableCell align="center">Postive Marks</TableCell>
@@ -329,6 +351,9 @@ export default function App() {
                     <TableRow>
                       <TableCell align="center">
                         {arrayOfObjects.length}
+                      </TableCell>
+                      <TableCell align="center">
+                        {arrayOfObjects.length - (right + wrong)}
                       </TableCell>
                       <TableCell align="center">{right}</TableCell>
                       <TableCell align="center">{wrong}</TableCell>
@@ -346,6 +371,24 @@ export default function App() {
               variant="outlined"
               component={Paper}
             >
+              <Box
+                sx={{
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "center",
+                  margin: "5px",
+                }}
+              >
+                <Typography
+                  variant="button"
+                  sx={{
+                    fontSize: "28px",
+                  }}
+                >
+                  Attempted Questions
+                </Typography>
+              </Box>
+
               {ans}
             </Container>
           </>
@@ -365,17 +408,47 @@ export default function App() {
             <Paper elevation={5} component={Box} p={2}>
               {start ? (
                 <>
-                  <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', borderBottom: '2px solid black'}}>
-                    <Typography sx={{ fontSize: '20px'}} variant="overline">Instruction</Typography>
+                  <Box
+                    sx={{
+                      width: "100%",
+                      display: "flex",
+                      justifyContent: "center",
+                      borderBottom: "2px solid black",
+                    }}
+                  >
+                    <Typography sx={{ fontSize: "20px" }} variant="overline">
+                      Instruction
+                    </Typography>
                   </Box>
-                  <Box sx={{ width: '100%', margin: '5px'}}>
-                    <Typography variant="overline">Welcome to Quiz app. In this quiz have {arrayOfObjects.length} Questions. Each question in the quiz is of multiple-choice or "true or false" format. Each correct or incorrect response will result in appropriate feedback immediately at the end of all Questions. There will be negative marking on the basis of questions marks. The total score for the quiz is based on your responses to all questions.</Typography>
+                  <Box sx={{ width: "100%", margin: "5px" }}>
+                    <Typography variant="overline">
+                      Welcome to Quiz app. In this quiz have{" "}
+                      {arrayOfObjects.length} Questions. Each question in the
+                      quiz is of multiple-choice format. Each Question have fix time to choose answer. Each
+                      correct or incorrect response will result in appropriate
+                      feedback immediately at the end of all Questions. There
+                      will be negative marking on the basis of questions marks.
+                      The total score for the quiz is based on your responses to
+                      all questions.
+                    </Typography>
                   </Box>
-                  <Box pt={2} sx={{ width: '100%', display: 'flex', justifyContent: 'center', borderTop: '2px solid black'}}>
-                  <Button  variant="contained"
-                        size="medium"
-                        onClick={qstart}
-                        color="secondary">START Quiz</Button>
+                  <Box
+                    pt={2}
+                    sx={{
+                      width: "100%",
+                      display: "flex",
+                      justifyContent: "center",
+                      borderTop: "2px solid black",
+                    }}
+                  >
+                    <Button
+                      variant="contained"
+                      size="medium"
+                      onClick={qstart}
+                      color="secondary"
+                    >
+                      START Quiz
+                    </Button>
                   </Box>
                 </>
               ) : (
@@ -392,11 +465,15 @@ export default function App() {
                   </Box>
                   {displayQues}
                   <Box display="flex" sx={{ justifyContent: "flex-end" }} p={2}>
-                   
                     {pageNumber < arrayOfObjects.length - 1 ? (
                       <Button
                         variant="contained"
-                        disabled={!(selectedAnswer[selectedAnswer.length - 1] === (pageNumber + 1))}
+                        disabled={
+                          !(
+                            selectedAnswer[selectedAnswer.length - 1] ===
+                            pageNumber + 1
+                          )
+                        }
                         size="large"
                         onClick={next}
                         color="secondary"
@@ -406,7 +483,12 @@ export default function App() {
                     ) : pageNumber < arrayOfObjects.length ? (
                       <Button
                         variant="contained"
-                        disabled={!(selectedAnswer[selectedAnswer.length - 1] === (pageNumber + 1))}
+                        disabled={
+                          !(
+                            selectedAnswer[selectedAnswer.length - 1] ===
+                            pageNumber + 1
+                          )
+                        }
                         size="large"
                         onClick={result}
                         color="secondary"
