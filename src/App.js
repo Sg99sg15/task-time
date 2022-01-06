@@ -31,16 +31,18 @@ export default function App() {
 
   // click to show Answer
   const handleAnswerOptionClick = (isCorrect, id, answer, all) => {
+    
+    const time = num - timer;
+    console.log(timer)
     if (isCorrect) {
-      setScore(score + all.marks);
+      setScore(score + all.marks + timer);
       setRight(right + 1);
-      setPosi(posi + all.marks);
+      setPosi(posi + all.marks + timer);
     } else {
       setScore(score - all.negative);
       setWrong(wrong + 1);
       setNega(nega + all.negative);
     }
-    const time = num - timer;
     let rAns = all.options
       .filter(function (element) {
         return element.isCorrect === true;
@@ -52,9 +54,9 @@ export default function App() {
       ...choose,
       { qn: id, question: all.ques, ans: answer, right: rAns, qtime: time },
     ]);
-    if (Ref.current) {
-      clearInterval(Ref.current);
-    }
+      // if (Ref.current) {
+      //   clearInterval(Ref.current);
+      // }
     setSelectedAnswer([...selectedAnswer, id]);
   };
   const ans = choose.map((user, index) => (
@@ -104,9 +106,9 @@ export default function App() {
   };
   const startTimer = (e) => {
     let { total, seconds } = getTimeRemaining(e);
-    if (total >= 0) {
-      setTimer(seconds > 9 ? seconds : "0" + seconds);
-    }
+    // if (total >= 0) {
+      setTimer(seconds);
+    // }
   };
   const clearTimer = (e) => {
     setTimer("15");
